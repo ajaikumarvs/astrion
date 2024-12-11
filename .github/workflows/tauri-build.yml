@@ -36,7 +36,7 @@ jobs:
 
       # Step 5: Build the Tauri app
       - name: tauri-build
-        uses: JonasKruckenberg/tauri-build@v9.2.0
+        uses: JonasKruckenberg/tauri-build@v1
         with:
           # Specify the binary to use for building (leave blank for default)
           runner: ""
