@@ -1,52 +1,42 @@
-name: tauri-build
+name: 'publish'
 
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - release
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-binaries:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, ubuntu-latest, windows-latest]
 
+    runs-on: ${{ matrix.platform }}
     steps:
-      # Step 1: Checkout the repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
-      # Step 2: Install Rust
-      - name: Install Rust
+      - name: setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 20
+
+      - name: install Rust stable
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          override: true
 
-      # Step 3: Install Node.js (if your Tauri app requires it)
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20.18.1
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
 
-      # Step 4: Install dependencies
-      - name: Install dependencies
-        run: npm install
+      - uses: JonasKruckenberg/tauri-build@v1
+        id: tauri_build
 
-      # Step 5: Build the Tauri app
-      - name: tauri-build
-        uses: JonasKruckenberg/tauri-build@v1
-        with:
-          # Specify the binary to use for building (leave blank for default)
-          runner: ""
-          # Additional arguments for the build command
-          args: ""
-          # Root of the project (default is current working directory)
-          projectPath: "."
-          # Path to a custom Tauri configuration file
-          configPath: "./src-tauri/tauri.conf.json"
-          # Specify the target triple (e.g., x86_64-unknown-linux-gnu)
-          target: ""
-          # Set to true for debug builds
-          debug: false
+    # You can now use the JSON array of artifacts under `steps.tauri_build.outputs.artifacts` to post-process/upload your bundles
