@@ -3,6 +3,10 @@
   "productName": "astrion",
   "version": "0.1.0",
   "identifier": "com.astrion.app",
+  "plugins": {"shell":{"open" : true}},
+
+  
+
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -18,7 +22,13 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "dangerousDisableAssetCspModification": false,
+      "freezePrototype": true,
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["**"]
+      }
     }
   },
   "bundle": {
